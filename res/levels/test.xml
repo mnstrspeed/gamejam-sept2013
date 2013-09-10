@@ -1,6 +1,24 @@
-<lvl width="1000" height="500">
-	<plyrStrt x="0" y="0" />
-	<plyrStrt x="50" y="50" />
-	<pltfrm x="0" y="0" width="100" height="4" />
-	<pltfrm x="50" y="50" width="20" height="4" />
+<lvl width="1280" height="720">
+	<rsrcs>
+		<lf>8</lf>
+		<wd>5</wd>
+		<stn>1</stn>
+	</rsrcs>
+	<plyrStrt x="0" y="100" />
+	<plyrStrt x="200" y="50" />
+	<pltfrm x="0" y="0" width="1280" height="12" />
+	<pltfrm x="480" y="44" width="130" height="12" />
+	<pltfrm x="650" y="80" width="130" height="12" />
+	<pltfrm x="260" y="140" width="130" height="12" />
+	<pltfrm x="260" y="340" width="130" height="12" />
+	<pltfrm x="480" y="200" width="130" height="12" />
+	<pltfrm x="650" y="400" width="100" height="12" />
+	<pltfrm x="800" y="450" width="150" height="12" />
+	<pltfrm x="520" y="290" width="300" height="12" />
+	<pltfrm x="0" y="450" width="100" height="12" />
+	<pltfrm x="50" y="400" width="200" height="12" />
+	<pltfrm x="280" y="380" width="50" height="12" />
+	<pltfrm x="700" y="220" width="350" height="12" />
+	<pltfrm x="300" y="500" width="100" height="12" />
+	<pltfrm x="100" y="150" width="85" height="12" />
 </lvl>

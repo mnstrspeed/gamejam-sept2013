@@ -3,6 +3,7 @@ package io.file;
 import game.Game;
 import game.Level;
 import game.objects.Platform;
+import game.objects.resources.ResourceKind;
 
 import java.text.ParseException;
 
@@ -51,10 +52,39 @@ public class LevelXMLHandler extends DefaultHandler {
 					+ " in " + element + " (" + context + ")", errorOffset);
 		}
 	}
+	
+	@SuppressWarnings("serial")
+	private class MissingTextContentException extends ParseException {
+		public MissingTextContentException(String element,
+				int errorOffset) {
+			super("Missing text content in " + element,
+					errorOffset);
+		}
+	}
+	
+	@SuppressWarnings("serial")
+	private class UnexpectedTextContentValueException extends ParseException {
+		public UnexpectedTextContentValueException(String value, String element, String context,
+				int errorOffset) {
+			super("Unexpected text content " + value + " in " + element + " (" + context + ")",
+					errorOffset);
+		}
+	}
 
 	private Locator locator;
 	private Level level;
+	
+	private static final int FLAG_READ_RESOURCES = 1;
+	private static final int FLAG_READ_RESOURCES_LIFE = 2;
+	private static final int FLAG_READ_RESOURCES_STONE = 4;
+	private static final int FLAG_READ_RESOURCES_WOOD = 8;
+	
+	private int elementMask;
 
+	public LevelXMLHandler() {
+		this.elementMask = 0;
+	}
+	
 	public Level getLevel() {
 		return level;
 	}
@@ -71,7 +101,7 @@ public class LevelXMLHandler extends DefaultHandler {
 
 	@Override
 	public void endDocument() throws SAXException {
-
+		
 	}
 
 	@Override
@@ -118,6 +148,18 @@ public class LevelXMLHandler extends DefaultHandler {
 				position = new Vector(dblX, dblY);
 				this.level.addPlayerStart(position);
 				break;
+			case "rsrcs":
+				this.elementMask = this.elementMask | LevelXMLHandler.FLAG_READ_RESOURCES;
+				break;
+			case "lf":
+				this.elementMask = this.elementMask | LevelXMLHandler.FLAG_READ_RESOURCES_LIFE;
+				break;
+			case "stn":
+				this.elementMask = this.elementMask | LevelXMLHandler.FLAG_READ_RESOURCES_STONE;
+				break;
+			case "wd":
+				this.elementMask = this.elementMask | LevelXMLHandler.FLAG_READ_RESOURCES_WOOD;
+				break;
 			default:
 				throw new UnexpectedElementException(qName, "unknown",
 						this.locator.getLineNumber());
@@ -133,26 +175,70 @@ public class LevelXMLHandler extends DefaultHandler {
 			throws SAXException {
 		try {
 			this.checkElementEndContext(qName);
+			switch(qName) {
+			case "rsrcs":
+				this.elementMask = this.elementMask & ~FLAG_READ_RESOURCES;
+				break;
+			case "lf":
+				this.elementMask = this.elementMask & ~FLAG_READ_RESOURCES_LIFE;
+				break;
+			case "stn":
+				this.elementMask = this.elementMask & ~FLAG_READ_RESOURCES_STONE;
+				break;
+			case "wd":
+				this.elementMask = this.elementMask & ~FLAG_READ_RESOURCES_WOOD;
+				break;
+			}
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
+	
+	@Override
+	public void characters(char ch[], int start, int length) {
+	try {
+		String content = new String(ch, start, length);
+		if((this.elementMask & FLAG_READ_RESOURCES_LIFE) == FLAG_READ_RESOURCES_LIFE) {
+			int amount = castStringContentToInt(content, "lf");
+			this.level.setStartResourceAmount(ResourceKind.Life, amount);
+		}
+		else if((this.elementMask & FLAG_READ_RESOURCES_STONE) == FLAG_READ_RESOURCES_STONE) {
+			int amount = castStringContentToInt(content, "stn");
+			this.level.setStartResourceAmount(ResourceKind.Stone, amount);
+		}
+		else if((this.elementMask & FLAG_READ_RESOURCES_WOOD) == FLAG_READ_RESOURCES_WOOD) {
+			int amount = castStringContentToInt(content, "wd");
+			this.level.setStartResourceAmount(ResourceKind.Wood, amount);
+		} 
+	} catch (ParseException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	}
 
 	private void checkElementStartContext(String element) throws ParseException {
 		switch (element) {
 		case "pltfrm": // Intended fall through
-		case "plyrStrt":
+		case "plyrStrt": // Intended fall through
+		case "rscrcs":
 			if (this.level == null) {
 				throw new UnexpectedElementException(element,
 						"no level started", this.locator.getLineNumber());
 			}
-			if (element == "plyrStrt") {
+			if (element.equals("plyrStrt")) {
 				if (this.level.getPlayerStarts().size() > Game.GAME_NUM_PLAYERS) {
 					throw new UnexpectedElementException(element, "maximum of "
 							+ Game.GAME_NUM_PLAYERS + " players exceeded",
 							this.locator.getLineNumber());
 				}
+			}
+			break;
+		case "lf": // Intended fall through
+		case "st":  // Intended fall through
+		case "wd":
+			if((this.elementMask & FLAG_READ_RESOURCES) != FLAG_READ_RESOURCES) {
+				throw new UnexpectedElementException(element, "resource reading not started", this.locator.getLineNumber());
 			}
 			break;
 		}
@@ -167,6 +253,25 @@ public class LevelXMLHandler extends DefaultHandler {
 						this.locator.getLineNumber());
 			}
 			break;
+		case "rscrcs":
+			if((this.elementMask & FLAG_READ_RESOURCES) != FLAG_READ_RESOURCES) {
+				throw new UnexpectedElementException(element, "finished reading without starting", 0);
+			}
+			break;
+		case "lf":
+			if((this.elementMask & FLAG_READ_RESOURCES_LIFE) != FLAG_READ_RESOURCES_LIFE) {
+				throw new UnexpectedElementException(element, "finished reading without starting", 0);
+			}
+			break;
+		case "stn":
+			if((this.elementMask & FLAG_READ_RESOURCES_STONE) != FLAG_READ_RESOURCES_STONE) {
+				throw new UnexpectedElementException(element, "finished reading without starting", 0);
+			}
+			break;
+		case "wd":
+			if((this.elementMask & FLAG_READ_RESOURCES_WOOD) != FLAG_READ_RESOURCES_WOOD) {
+				throw new UnexpectedElementException(element, "finished reading without starting", 0);
+			}
 		}
 	}
 
@@ -184,5 +289,18 @@ public class LevelXMLHandler extends DefaultHandler {
 					element, "number expected", this.locator.getLineNumber());
 		}
 		return dblValue;
+	}
+	
+	private int castStringContentToInt(String strValue, String element) throws ParseException {
+		int intValue;
+		if (strValue.isEmpty()) {
+			throw new MissingTextContentException(element, this.locator.getLineNumber());
+		}
+		try {
+			intValue = Integer.valueOf(strValue);
+		} catch (NumberFormatException e) {
+			throw new UnexpectedTextContentValueException(strValue, element, "number expected", this.locator.getLineNumber());
+		}
+		return intValue;
 	}
 }

@@ -50,9 +50,33 @@ public class Rectangle {
 	
 	public boolean intersects(Rectangle b) {
 		// Assumes top < bottom (top-left corner of screen is origin)
-		return this.getLeft() <= b.getRight() &&
-				b.getLeft() <= this.getRight() &&
-				this.getTop() <= b.getBottom() &&
-				b.getTop() <= this.getBottom();
+		return this.getLeft() < b.getRight() &&
+				b.getLeft() < this.getRight() &&
+				this.getTop() < b.getBottom() &&
+				b.getTop() < this.getBottom();
+	}
+	
+	public Vector getPreCollisionPosition(Rectangle b) {
+		Vector result = this.position;
+		if (b.getTop() <= this.getBottom()) {
+			if (b.getLeft() <= this.getLeft() && this.getRight() <= b.getRight()) {  // |B|A|B|
+				System.out.println("Vertical, from top");
+				// Vertical, from top
+			} else if (this.getRight() <= b.getLeft()) { // |A|A|B|
+				System.out.println("Horizontal, from left");
+				// Horizontal, from left
+			} else if (this.getLeft() <= b.getRight()) { // |B|A|A|
+				System.out.println("Horizontal, from right");
+				// Horizontal, from right
+			}
+		} else {
+			System.out.println("Vertical, from bottom");
+			// Vertical, from top
+		}
+		return result;
+	}
+	
+	public String toString() {
+		return "Rectangle at " + this.getBottomLeftCorner().getX() + "," + this.getBottomLeftCorner().getY() + "---" + this.getTopRightCorner().getX() + "," + getTopRightCorner().getY();
 	}
 }

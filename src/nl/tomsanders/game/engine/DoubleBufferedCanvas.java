@@ -6,19 +6,20 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
 
-public class DoubleBufferedCanvas extends Canvas {
-	private static final long serialVersionUID = 1L;
+import nl.tomsanders.game.engine.util.Size;
 
+@SuppressWarnings("serial")
+public class DoubleBufferedCanvas extends Canvas {
+	
 	@Override
 	public void repaint() {
-		System.out.println("DoubleBufferedCanvas.repaint");
 		this.update(this.getGraphics());
 	}
 	
 	@Override
 	public void update(Graphics g) {
-		System.out.println("DoubleBufferedCanvas.update");
 		Dimension canvasDimension = this.getSize();
+		
 		Image offscreenImage = this.createImage(
 				(int)canvasDimension.getWidth(),
 				(int)canvasDimension.getHeight());
@@ -29,7 +30,6 @@ public class DoubleBufferedCanvas extends Canvas {
 		this.paint(offscreenGraphics);
 		
 		g.drawImage(offscreenImage, 0, 0, this);
-		
 	}
 
 	private void clear(Graphics g, Color clearColor) {

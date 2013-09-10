@@ -1,14 +1,17 @@
 package game;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import nl.tomsanders.game.engine.util.Size;
 import nl.tomsanders.game.engine.util.Vector;
 import game.objects.GameObject;
+import game.objects.resources.ResourceKind;
 import io.file.LevelImporter;
 
 public class Level {
 	private Size size;
+	private int[] startResourceAmounts;
 	private ArrayList<Vector> playerStarts;
 	private ArrayList<GameObject> objects;
 	
@@ -18,8 +21,18 @@ public class Level {
 	
 	public Level(Size size) {
 		this.size = size;
+		this.startResourceAmounts = new int[ResourceKind.values().length];
+		Arrays.fill(startResourceAmounts, 0);
 		this.playerStarts = new ArrayList<Vector>();
 		this.objects = new ArrayList<GameObject>();
+	}
+	
+	public int[] getStartResourceAmounts() {
+		return this.startResourceAmounts;
+	}
+	
+	public void setStartResourceAmount(ResourceKind resource, int amount) {
+		this.startResourceAmounts[resource.ordinal()] = amount;
 	}
 	
 	public void addPlayerStart(Vector playerStart) {
@@ -40,6 +53,10 @@ public class Level {
 	
 	public ArrayList<GameObject> getObjects() {
 		return objects;
+	}
+	
+	public Size getSize() {
+		return size;
 	}
 	
 	/**
